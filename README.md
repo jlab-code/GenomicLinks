@@ -9,9 +9,7 @@ Before you begin, ensure you have met the following requirements:
 * You have installed the latest version of [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 * You have a Windows, Linux, or macOS machine.
 
-## Installing GenomicLinks
-
-To install GenomicLinks, follow these steps:
+Prepare conda environment.
 
 Linux and macOS:
 * conda env create -f jup.yml
@@ -22,7 +20,7 @@ Linux and macOS:
 
 1. Run the master script 0_runGenomicLinks.sh to process all steps automatically:
 
-sh 0_runGenomicLinks.sh
+* sh 0_runGenomicLinks.sh
 
 Make sure all paths in the script are correctly set to match your directory structure and data files.
 
