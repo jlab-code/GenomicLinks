@@ -15,7 +15,7 @@ To install GenomicLinks, follow these steps:
 1. **Clone the repository**:
    Clone the GenomicLinks repository to your local machine using git:
    ```bash
-   git clone https://github.com/yourusername/GenomicLinks.git
+   git clone https://github.com/jlab-code/GenomicLinks.git
    cd GenomicLinks
 
 1. **Setup Conda environmnet**:
