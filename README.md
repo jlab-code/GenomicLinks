@@ -15,6 +15,26 @@ Linux and macOS:
 * conda env create -f jup.yml
 * conda activate jup
 
+To install GenomicLinks, follow these steps:
+
+1. **Clone the repository**:
+   Clone the GenomicLinks repository to your local machine using git:
+   ```bash
+   git clone https://github.com/yourusername/GenomicLinks.git
+   cd GenomicLinks
+
+1. **Setup Conda environmnet**:
+    Create and activate conda env.
+* conda env create -f jup.yml
+* conda activate jup
+
+3. **Download Reference Genome**:
+    Download the Zea mays reference genome fasta file. 
+    Ensure you place it in the appropriate directory or update the script paths to its location. 
+    Reference genome files can typically be found at NCBI or ensemble plants:
+
+* NCBI Zea mays
+* Ensembl Plants
 
 ## Using GenomicLinks
 
@@ -33,6 +53,10 @@ You can also run each script individually if you need more control over the exec
 
 Ensure you provide the necessary arguments and paths when running each script individually.
 
+
+## Web Tool
+
+For easier access and usage, visit genomiclinks.com where you can use GenomicLinks through a user-friendly web interface.
 
 ## Contact
 
