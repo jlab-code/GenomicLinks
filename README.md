@@ -9,11 +9,6 @@ Before you begin, ensure you have met the following requirements:
 * You have installed the latest version of [Miniconda](https://docs.conda.io/en/latest/miniconda.html).
 * You have a Windows, Linux, or macOS machine.
 
-Prepare conda environment.
-
-Linux and macOS:
-* conda env create -f jup.yml
-* conda activate jup
 
 To install GenomicLinks, follow these steps:
 
@@ -25,8 +20,9 @@ To install GenomicLinks, follow these steps:
 
 1. **Setup Conda environmnet**:
     Create and activate conda env.
-* conda env create -f jup.yml
-* conda activate jup
+    ```bash
+    conda env create -f jup.yml
+    conda activate jup
 
 3. **Download Reference Genome**:
     Download the Zea mays reference genome fasta file. 
@@ -40,7 +36,8 @@ To install GenomicLinks, follow these steps:
 
 1. Run the master script 0_runGenomicLinks.sh to process all steps automatically:
 
-* sh 0_runGenomicLinks.sh
+    ```bash
+    sh 0_runGenomicLinks.sh
 
 Make sure all paths in the script are correctly set to match your directory structure and data files.
 
