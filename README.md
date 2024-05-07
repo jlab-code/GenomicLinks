@@ -25,12 +25,11 @@ To install GenomicLinks, follow these steps:
     conda activate jup
 
 3. **Download Reference Genome**:
-    Download the Zea mays reference genome fasta file. 
-    Ensure you place it in the appropriate directory or update the script paths to its location. 
-    Reference genome files can typically be found at NCBI or ensemble plants:
-
-* NCBI Zea mays
-* Ensembl Plants
+   Download the Zea mays reference genome fasta file. 
+   Ensure you place it in the appropriate directory or update the script paths to its location. 
+   Reference genome files can typically be found at:
+   - [NCBI Zea mays](https://www.ncbi.nlm.nih.gov/genome/?term=zea+mays)
+   - [Ensembl Plants for Zea mays](http://plants.ensembl.org/Zea_mays/Info/Index)
 
 ## Using GenomicLinks
 
@@ -53,7 +52,7 @@ Ensure you provide the necessary arguments and paths when running each script in
 
 ## Web Tool
 
-For easier access and usage, visit genomiclinks.com where you can use GenomicLinks through a user-friendly web interface.
+For easier access and usage, visit [genomiclinks.com](http://genomiclinks.com) where you can use GenomicLinks through a user-friendly web interface.
 
 ## Contact
 
