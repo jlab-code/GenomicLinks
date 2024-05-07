@@ -1,135 +1,83 @@
 #!/usr/bin/env python
+# coding: utf-8
 
-# validating interacts in memory based on CPU/GPU
 import os
-import time
 import pandas as pd
-import traceback
 import numpy as np
-import sys
 from keras.models import load_model
-from itertools import chain
-import re
-
+from tensorflow.keras import backend as K
+import time
+import traceback
+import sys
 
 np.set_printoptions(suppress=True)
 
-
-def matrix_fasta_regions(chrm, tmp_one, tmp_two, reference_version='v4'):
-    # Adjust file_path construction based on reference version
-    if reference_version == 'v5':
-        chrm_str = 'chr' + str(chrm)
-    else:
-        chrm_str = str(chrm)   
-    file_path = chr_dir + chrm_str + "/" + str(tmp_one) + "_" + str(tmp_two) + ".txt"
-    fp = open(file_path)
+def matrix_fasta_regions(chrm, tmp_one, tmp_two, chr_dir):
     arr_matrix = np.zeros((4, 2500))  # ACGT
-    for i, line in enumerate(fp):
-        if i == 1:  # Assuming the sequence starts at the second line of the file
-            for line_character_count, c in enumerate(line.strip()):
-                if c in "ACGT":
-                    arr_matrix["ACGT".index(c)][line_character_count] = 1
-                elif c == "N":  # Unknown
-                    arr_matrix[:, line_character_count] = 0.25
-                elif c == "D":  # Deletion
-                    arr_matrix[:, line_character_count] = 0  # or however you want to handle deletions
-    fp.close()
-    return arr_matrix.astype('int')
+    with open(os.path.join(chr_dir, f"{chrm}/{tmp_one}_{tmp_two}.txt")) as fp:
+        for i, line in enumerate(fp):
+            if i == 1:  # Assuming the sequence starts at the second line of the file
+                for j, c in enumerate(line.strip()):
+                    if c in "ACGT":
+                        arr_matrix["ACGT".index(c), j] = 1
+                    elif c == "N":  # Equal distribution for 'N'
+                        arr_matrix[:, j] = 0.25
+                    elif c == "D":  # Zero for deletions 'D'
+                        arr_matrix[:, j] = 0
+    arr_matrix = arr_matrix.astype(int)
+    return arr_matrix
 
-
-def prediction(test1, test2):
-    pred_result = []
+def prediction(test1, test2, model):
     pred_labels = model.predict([test1, test2])
-    for item in zip(pred_labels):
-        if np.round(item) == 1:
-            result = 1
-        else:
-            result = 0
-        pred_result.append([result, "%.8f" % item[0][0]])
-    return pred_result
+    return np.round(pred_labels[:, 0]), pred_labels[:, 0]
 
-
-def ext_first(lst):
-    return [item[1] for item in lst]
-
-
-def ext_second(lst):
-    return [item[0] for item in lst]
-
-
-def run_prediction(csvfile):
+def run_prediction(csvfile, chr_dir, output, model):
     num_lines = sum(1 for line in open(csvfile))
-    chunk_size = 20000
-    first_record = True
-    tmp_s1 = []
-    tmp_e1 = []
-    count = 0
+    chunk_size = 50000  # Adjust chunk size in case of memory allocation errors.
     file_number = 0
     try:
-        for chunk in pd.read_csv(csvfile, sep="\t", header=None, skiprows=1,
-                                 chunksize=chunk_size):
+        for chunk in pd.read_csv(csvfile, sep="\t", header=None, skiprows=1, chunksize=chunk_size):
             start_time = time.time()
-            test1 = []
-            test2 = []
-            A = []
-            B = []
-            main_predict=[]
-            tmp_records = []
-            regions = np.array(chunk)
-            for item in regions:
-
-                if first_record:
-                    chrm1 = item[0]
-                    tmp_s1 = item[1]
-                    tmp_e1 = item[2]
-                    test1 = matrix_fasta_regions(chrm1, tmp_s1, tmp_e1)
-                    first_record = False
-
-                if  tmp_s1 != item[1] and tmp_e1 != item[2]:
-                    test1 = matrix_fasta_regions(item[0], item[1], item[2])
-                    chrm1 = item[0]
-                    tmp_s1 = item[1]
-                    tmp_e1 = item[2]
-                print(chrm1,tmp_s1,tmp_e1,"\t",item[3], item[4], item[5])
-                test2 = matrix_fasta_regions(item[3], item[4], item[5])
+            A, B, records = [], [], []
+            for item in np.array(chunk):
+                chrm1, s1, e1, chrm2, s2, e2 = item
+                test1 = matrix_fasta_regions(chrm1, s1, e1, chr_dir)
+                test2 = matrix_fasta_regions(chrm2, s2, e2, chr_dir)
                 A.append(test1)
                 B.append(test2)
-                count += 1
-                tmp_records.append([chrm1, tmp_s1, tmp_e1,item[3], item[4], item[5]])
+                records.append([chrm1, s1, e1, chrm2, s2, e2])
 
             A = np.array(A).transpose(0, 2, 1)
             B = np.array(B).transpose(0, 2, 1)
-            print("\n--- Computing predictions ... ---")
-            result = prediction(A, B)
-            main_predict.append(result)
-            first_record = True
-            print("--- Processed: ", count, "out of: ", num_lines)
-            main_predict = list(chain.from_iterable(main_predict))
-            dataframe = pd.DataFrame(tmp_records, columns=['chr', 's1', 'e1', 'chr', 's2', 'e2'])
-            dataframe['prob'] = ext_first(main_predict)
-            dataframe['interacted'] = ext_second(main_predict)
-            dataframe = dataframe.reset_index(drop=True)
-            print("--- Writing into file ... ---- ")
+            interacted, probs = prediction(A, B, model)
+
+            dataframe = pd.DataFrame(records, columns=['chr1', 's1', 'e1', 'chr2', 's2', 'e2'])
+            dataframe['interacted'] = interacted
+            dataframe['prob'] = probs
+
+            output_filename = os.path.join(output, f"predictions-{file_number}.csv")
+            # Ensure the directory exists
+            os.makedirs(output, exist_ok=True)
+            dataframe.to_csv(output_filename, sep='\t', index=False, encoding='utf-8')
             file_number += 1
-            dataframe.to_csv(output + "/pred-" + str(file_number) + "-" + str(count) +
-                             ".csv", sep='\t', index=False, encoding='utf-8')
-            print("--- %s seconds ---" % (time.time() - start_time))
-            print(15*"-")
+            print(f"Processed chunk: {file_number}, Time taken: {time.time() - start_time}s")
+            # Clear session to avoid memory leak
+            if 'K' in globals():
+                K.clear_session()
 
     except Exception as e:
-        print("type error: " + str(e))
-        print(traceback.format_exc())
+        print(f"Error: {str(e)}")
+        traceback.print_exc()
 
+if __name__ == "__main__":
+    predictions_dir = sys.argv[1]  # Directory for input and output
+    model_path = sys.argv[2]  # Model file path
+    model = load_model(model_path)
 
+    output = os.path.join(predictions_dir, "predictions")
+    csvfile = os.path.join(predictions_dir, "out.csv")
+    chr_dir = os.path.join(predictions_dir, "chr")
 
-
-
-FOLDER = sys.argv[1]
-chr_dir = FOLDER+"chr/"
-output = FOLDER
-
-model = load_model('/var/www/html/Gp/program/data/weights-improvement-dp2500-58.hdf5')
-
-
-run_prediction(FOLDER+"/out.csv")
+    run_prediction(csvfile, chr_dir, output, model)
+    print(f"Completed predictions for directory: {predictions_dir}")
 
