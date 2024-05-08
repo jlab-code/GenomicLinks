@@ -42,10 +42,13 @@ Make sure all paths in the script are correctly set to match your directory stru
 
 2. Individual Script Execution:
 You can also run each script individually if you need more control over the execution or for debugging purposes:
-* 1_PreprocessBEDPE.R: Processes the BEDPE file and prepares data.
-* 2_ExtractRegion.py: Extracts regions from the genome.
-* 3_Prediction.py: Performs the prediction of chromatin interactions.
-* 4_MergePredictionResults.sh: Merges all individual prediction files into a final result.
+
+    ```bash
+    python3 1_PreprocessBEDPE.R "/path/to/your/bedpe/file" "/path/to/your/scripts_directory/prediction_output" #Processes the BEDPE file and prepares data.
+    python3 2_ExtractRegion.py "/path/to/your/scripts_directory/prediction_output" "/path/to/fasta/file" #Extracts regions from the genome.
+    python3 3_Prediction.py "/path/to/your/scripts_directory/prediction_output" "/path/to/your/scripts_directory/weights-improvement-dp2500-58.hdf5 "#Performs the prediction of chromatin interactions.
+    python3 4_MergePredictionResults.sh "/path/to/your/scripts_directory/prediction_output" #Merges all individual prediction files into a final result.
+
 
 Ensure you provide the necessary arguments and paths when running each script individually.
 
