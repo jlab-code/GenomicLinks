@@ -1,6 +1,6 @@
 # GenomicLinks
 
-GenomicLinks is a computational tool designed to predict chromatin interactions in Zea mays (corn). 
+GenomicLinks is a computational tool designed to predict chromatin interactions in Zea mays (maize). 
 It utilizes genomic data to analyze and predict the interactions between different regions of chromatin, aiding researchers in understanding gene regulation and genome architecture in maize.
 
 ## Prerequisites
